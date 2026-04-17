@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Genesys Cloud OAuth Tester</title>
+  <title>Genesys Cloud OAuth Tester by Rasko with help from ChatGPT</title>
   <style>
     :root {
       --bg: #f5f7fb;
@@ -146,14 +146,26 @@
 
         <div id="status" class="status warn">Ready.</div>
 
+        <div class="actions">
+          <button class="ghost" id="generateAuthBtn">Generate Authorization header</button>
+          <button class="ghost" id="copyAuthBtn">Copy Authorization header</button>
+        </div>
+
         <div class="results">
           <div class="panel">
-            <h2>Response</h2>
-            <pre id="responseBox">—</pre>
+            <h2>Authorization header</h2>
+            <pre id="authBox">—</pre>
           </div>
           <div class="panel">
             <h2>Access token</h2>
             <pre id="tokenBox">—</pre>
+          </div>
+        </div>
+
+        <div class="results" style="margin-top:16px;">
+          <div class="panel" style="grid-column: 1 / -1;">
+            <h2>Response</h2>
+            <pre id="responseBox">—</pre>
           </div>
         </div>
       </div>
@@ -168,12 +180,53 @@
       clientSecret: document.getElementById('clientSecret'),
       status: document.getElementById('status'),
       responseBox: document.getElementById('responseBox'),
-      tokenBox: document.getElementById('tokenBox')
+      tokenBox: document.getElementById('tokenBox'),
+      authBox: document.getElementById('authBox')
     };
 
     function setStatus(text, cssClass) {
       els.status.className = 'status ' + (cssClass || 'warn');
       els.status.textContent = text;
+    }
+
+    function toBase64Ascii(value) {
+      return btoa(value);
+    }
+
+    function buildAuthorizationHeader() {
+      const clientId = els.clientId.value.trim();
+      const clientSecret = els.clientSecret.value;
+      if (!clientId || !clientSecret) {
+        return '';
+      }
+      return 'Basic ' + toBase64Ascii(`${clientId}:${clientSecret}`);
+    }
+
+    function generateAuthorizationHeader() {
+      const header = buildAuthorizationHeader();
+      if (!header) {
+        els.authBox.textContent = 'Please enter Client ID and Client Secret first.';
+        setStatus('Client ID and Client Secret are required to generate the Authorization header.', 'err');
+        return;
+      }
+      els.authBox.textContent = header;
+      setStatus('Authorization header generated.', 'ok');
+    }
+
+    async function copyAuthorizationHeader() {
+      const header = buildAuthorizationHeader();
+      if (!header) {
+        els.authBox.textContent = 'Please enter Client ID and Client Secret first.';
+        setStatus('Client ID and Client Secret are required to copy the Authorization header.', 'err');
+        return;
+      }
+      els.authBox.textContent = header;
+      try {
+        await navigator.clipboard.writeText(header);
+        setStatus('Authorization header copied.', 'ok');
+      } catch (error) {
+        setStatus('Clipboard copy failed, but the header is shown on the page.', 'warn');
+      }
     }
 
     async function testCredentials() {
@@ -192,6 +245,7 @@
       setStatus('Calling /api/token...', 'warn');
       els.responseBox.textContent = 'Request in progress...';
       els.tokenBox.textContent = '—';
+      els.authBox.textContent = buildAuthorizationHeader() || '—';
 
       try {
         const response = await fetch('/api/token', {
@@ -231,10 +285,13 @@
       els.audience.value = '';
       els.responseBox.textContent = '—';
       els.tokenBox.textContent = '—';
+      els.authBox.textContent = '—';
       setStatus('Cleared.', 'warn');
     }
 
     document.getElementById('testBtn').addEventListener('click', testCredentials);
+    document.getElementById('generateAuthBtn').addEventListener('click', generateAuthorizationHeader);
+    document.getElementById('copyAuthBtn').addEventListener('click', copyAuthorizationHeader);
     document.getElementById('clearBtn').addEventListener('click', clearAll);
     document.getElementById('toggleSecretBtn').addEventListener('click', () => {
       els.clientSecret.type = els.clientSecret.type === 'password' ? 'text' : 'password';
