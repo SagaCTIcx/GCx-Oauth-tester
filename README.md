@@ -39,7 +39,7 @@ No `vercel.json` file is required for this setup.
 
 After deployment:
 
-1. Open the Vercel URL.
+1. Open the Vercel URL https://g-cx-oauth-tester.vercel.app/.
 2. Paste the client ID and client secret.
 3. Select the correct region.
 4. Leave audience empty unless specifically needed.
