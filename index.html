@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Genesys Cloud OAuth Tester</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #d0d5dd;
+      --primary: #475cc6;
+      --primary-dark: #3649a6;
+      --ok: #067647;
+      --warn: #b54708;
+      --err: #b42318;
+      --code: #101828;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef3ff 0%, var(--bg) 220px);
+      padding: 28px;
+    }
+    .page { max-width: 980px; margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border: 1px solid #e4e7ec;
+      border-radius: 18px;
+      box-shadow: 0 12px 32px rgba(16, 24, 40, 0.08);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, var(--primary), #6a7ee8);
+      color: white;
+      padding: 22px 24px;
+    }
+    .header h1 { margin: 0 0 6px; font-size: 26px; }
+    .header p { margin: 0; opacity: 0.95; line-height: 1.5; }
+    .body { padding: 24px; }
+    .notice {
+      background: #fffaeb;
+      border: 1px solid #fedf89;
+      color: #7a2e0b;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+    .notice strong { display: block; margin-bottom: 4px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 600;
+    }
+    input, select {
+      width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; font-size: 14px;
+      background: #fff; color: var(--text);
+    }
+    input:focus, select:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(71, 92, 198, 0.12);
+    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 18px; }
+    button {
+      border: 0; border-radius: 12px; padding: 11px 15px; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .primary { background: var(--primary); color: white; }
+    .primary:hover { background: var(--primary-dark); }
+    .ghost { background: #f2f4f7; color: #344054; }
+    .results { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+    .panel {
+      border: 1px solid #e4e7ec; border-radius: 14px; overflow: hidden; background: #fff;
+    }
+    .panel h2 {
+      margin: 0; padding: 12px 14px; font-size: 14px; border-bottom: 1px solid #eaecf0; background: #f9fafb;
+    }
+    pre {
+      margin: 0; min-height: 220px; max-height: 420px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+      padding: 14px; background: var(--code); color: #e5e7eb;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.5;
+    }
+    .status { margin-top: 10px; font-size: 13px; font-weight: 600; }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .err { color: var(--err); }
+    @media (max-width: 860px) {
+      .grid, .results { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+      <div class="header">
+        <h1>Genesys Cloud OAuth Tester</h1>
+        <p>Internal helper page for validating client credentials through a Vercel serverless function.</p>
+      </div>
+      <div class="body">
+        <div class="notice">
+          <strong>How this works</strong>
+          The browser calls <code>/api/token</code> on the same Vercel project. The serverless function then calls the Genesys Cloud token endpoint. This keeps the token request server-side and avoids the browser CORS problem.
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="region">Region</label>
+            <select id="region">
+              <option value="https://login.mypurecloud.ie" selected>EU West 1 (Ireland) – login.mypurecloud.ie</option>
+              <option value="https://login.euc2.pure.cloud">EU Central 2 (Zurich) – login.euc2.pure.cloud</option>
+              <option value="https://login.mypurecloud.com">US East 1 – login.mypurecloud.com</option>
+              <option value="https://login.usw2.pure.cloud">US West 2 – login.usw2.pure.cloud</option>
+              <option value="https://login.mypurecloud.de">EU Central 1 – login.mypurecloud.de</option>
+              <option value="https://login.mypurecloud.jp">AP Northeast 1 – login.mypurecloud.jp</option>
+              <option value="https://login.apne2.pure.cloud">AP Northeast 2 (Osaka) – login.apne2.pure.cloud</option>
+              <option value="https://login.aps1.pure.cloud">AP South 1 (Mumbai) – login.aps1.pure.cloud</option>
+              <option value="https://login.apse2.pure.cloud">AP Southeast 2 (Sydney) – login.apse2.pure.cloud</option>
+              <option value="https://login.cac1.pure.cloud">Canada Central – login.cac1.pure.cloud</option>
+              <option value="https://login.sae1.pure.cloud">South America East 1 – login.sae1.pure.cloud</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="audience">Audience (optional)</label>
+            <input id="audience" placeholder="Leave empty unless needed" spellcheck="false" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="clientId">Client ID</label>
+          <input id="clientId" autocomplete="off" spellcheck="false" placeholder="Paste client ID" />
+        </div>
+
+        <div class="field">
+          <label for="clientSecret">Client Secret</label>
+          <input id="clientSecret" type="password" autocomplete="off" spellcheck="false" placeholder="Paste client secret" />
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="testBtn">Test credentials</button>
+          <button class="ghost" id="toggleSecretBtn">Show / hide secret</button>
+          <button class="ghost" id="clearBtn">Clear</button>
+        </div>
+
+        <div id="status" class="status warn">Ready.</div>
+
+        <div class="results">
+          <div class="panel">
+            <h2>Response</h2>
+            <pre id="responseBox">—</pre>
+          </div>
+          <div class="panel">
+            <h2>Access token</h2>
+            <pre id="tokenBox">—</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const els = {
+      region: document.getElementById('region'),
+      audience: document.getElementById('audience'),
+      clientId: document.getElementById('clientId'),
+      clientSecret: document.getElementById('clientSecret'),
+      status: document.getElementById('status'),
+      responseBox: document.getElementById('responseBox'),
+      tokenBox: document.getElementById('tokenBox')
+    };
+
+    function setStatus(text, cssClass) {
+      els.status.className = 'status ' + (cssClass || 'warn');
+      els.status.textContent = text;
+    }
+
+    async function testCredentials() {
+      const clientId = els.clientId.value.trim();
+      const clientSecret = els.clientSecret.value;
+      const region = els.region.value;
+      const audience = els.audience.value.trim();
+
+      if (!clientId || !clientSecret) {
+        setStatus('Client ID and Client Secret are required.', 'err');
+        els.responseBox.textContent = 'Please enter Client ID and Client Secret.';
+        els.tokenBox.textContent = '—';
+        return;
+      }
+
+      setStatus('Calling /api/token...', 'warn');
+      els.responseBox.textContent = 'Request in progress...';
+      els.tokenBox.textContent = '—';
+
+      try {
+        const response = await fetch('/api/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientId,
+            clientSecret,
+            region,
+            audience
+          })
+        });
+
+        const text = await response.text();
+        els.responseBox.textContent = `${response.status} ${response.statusText}\n\n${text}`;
+
+        let parsed;
+        try { parsed = JSON.parse(text); } catch (_) {}
+
+        if (response.ok && parsed && parsed.access_token) {
+          els.tokenBox.textContent = parsed.access_token;
+          setStatus('Credentials are valid. Token returned.', 'ok');
+        } else {
+          els.tokenBox.textContent = '—';
+          setStatus('No token returned. Check the Response panel.', 'err');
+        }
+      } catch (error) {
+        els.responseBox.textContent = `Browser -> /api/token failed.\n\n${error && error.message ? error.message : String(error)}`;
+        els.tokenBox.textContent = '—';
+        setStatus('Request failed before reaching Genesys Cloud.', 'err');
+      }
+    }
+
+    function clearAll() {
+      els.clientId.value = '';
+      els.clientSecret.value = '';
+      els.audience.value = '';
+      els.responseBox.textContent = '—';
+      els.tokenBox.textContent = '—';
+      setStatus('Cleared.', 'warn');
+    }
+
+    document.getElementById('testBtn').addEventListener('click', testCredentials);
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+    document.getElementById('toggleSecretBtn').addEventListener('click', () => {
+      els.clientSecret.type = els.clientSecret.type === 'password' ? 'text' : 'password';
+    });
+  </script>
+</body>
+</html>
